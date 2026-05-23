@@ -1,0 +1,26 @@
+name: Build T-Display-S3
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build bread-compact-wifi-lcd-170x320
+    runs-on: ubuntu-latest
+    container:
+      image: espressif/idf:v5.5.2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build
+        shell: bash
+        run: |
+          source $IDF_PATH/export.sh
+          python scripts/release.py bread-compact-wifi-lcd --name bread-compact-wifi-lcd-170x320
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: xiaozhi_bread-compact-wifi-lcd-170x320
+          path: build/merged-binary.bin
