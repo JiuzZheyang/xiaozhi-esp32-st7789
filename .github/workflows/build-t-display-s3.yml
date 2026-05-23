@@ -13,9 +13,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Remove stale managed_components
+      - name: Fix safe directory and clean stale files
         shell: bash
         run: |
+          git config --global --add safe.directory /__w/xiaozhi-esp32-st7789/xiaozhi-esp32-st7789
           rm -rf managed_components
           rm -rf build
           git status
