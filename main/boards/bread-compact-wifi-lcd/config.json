@@ -1,0 +1,11 @@
+{
+    "target": "esp32s2",
+    "builds": [
+        {
+            "name": "bread-compact-wifi-lcd-170x320",
+            "sdkconfig_append": [
+               "LCC_ST7789_170X320=y"
+            ]
+        }
+    ]
+}
