@@ -25,7 +25,7 @@ jobs:
         shell: bash
         run: |
           source $IDF_PATH/export.sh
-          python scripts/release.py bread-compact-wifi-lcd --name bread-compact-wifi-lcd-170x320
+          python scripts/release.py bread-compact-wifi-lcd --name bread-compact-wifi-lcd-170x320 --flash-size 16MB
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
