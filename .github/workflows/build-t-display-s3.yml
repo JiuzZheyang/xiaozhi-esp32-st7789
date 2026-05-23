@@ -13,6 +13,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Remove stale managed_components
+        shell: bash
+        run: |
+          rm -rf managed_components
+          rm -rf build
+          git status
+
       - name: Build
         shell: bash
         run: |
