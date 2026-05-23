@@ -5,7 +5,7 @@ on:
 
 jobs:
   build:
-    name: Build bread-compact-wifi-lcd-170x320
+    name: Build lilygo-t-display-s3
     runs-on: ubuntu-latest
     container:
       image: espressif/idf:v5.5.2
@@ -25,10 +25,10 @@ jobs:
         shell: bash
         run: |
           source $IDF_PATH/export.sh
-          python scripts/release.py bread-compact-wifi-lcd --name bread-compact-wifi-lcd-170x320
+          python scripts/release.py lilygo-t-display-s3 --name lilygo-t-display-s3
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: xiaozhi_bread-compact-wifi-lcd-170x320
+          name: xiaozhi_lilygo-t-display-s3
           path: build/merged-binary.bin
