@@ -19,6 +19,9 @@ jobs:
           git config --global --add safe.directory /__w/xiaozhi-esp32-st7789/xiaozhi-esp32-st7789
           rm -rf managed_components
           rm -rf build
+          # 清除 IDF 组件缓存，确保完全重新编译
+          rm -rf ~/esp/projects/*
+          rm -rf ~/.espressif/espidf-*
           git status
 
       - name: Build

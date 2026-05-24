@@ -107,6 +107,8 @@ public:
         boot_button_(BOOT_BUTTON_GPIO),
         touch_button_(TOUCH_BUTTON_GPIO),
         asr_button_(ASR_BUTTON_GPIO) {
+        ESP_LOGI(TAG, "=== LilygoTDisplayS3 CONSTRUCTOR START ===");
+        ESP_LOGI(TAG, "DISPLAY_BL_PIN=%d GPIO_NUM_NC=%d", DISPLAY_BL_PIN, GPIO_NUM_NC);
         InitializeSpi();
         InitializeLcdDisplay();
         InitializeButtons();
@@ -118,6 +120,7 @@ public:
         } else {
             ESP_LOGW(TAG, "Backlight pin is NC, skipping backlight init");
         }
+        ESP_LOGI(TAG, "=== LilygoTDisplayS3 CONSTRUCTOR END ===");
     }
 
     virtual AudioCodec* GetAudioCodec() override {
