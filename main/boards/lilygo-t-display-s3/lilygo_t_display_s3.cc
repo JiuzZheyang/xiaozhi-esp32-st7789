@@ -110,8 +110,13 @@ public:
         InitializeSpi();
         InitializeLcdDisplay();
         InitializeButtons();
+        ESP_LOGI(TAG, "Display BL pin: %d, NC=%d", DISPLAY_BL_PIN, GPIO_NUM_NC);
         if (DISPLAY_BL_PIN != GPIO_NUM_NC) {
+            ESP_LOGI(TAG, "Initializing backlight on GPIO %d", DISPLAY_BL_PIN);
             GetBacklight()->RestoreBrightness();
+            ESP_LOGI(TAG, "Backlight initialized, brightness: %d", GetBacklight()->brightness());
+        } else {
+            ESP_LOGW(TAG, "Backlight pin is NC, skipping backlight init");
         }
     }
 
