@@ -386,6 +386,9 @@ choice BOARD_TYPE
     config BOARD_TYPE_LILYGO_T_DISPLAY_P4
         bool "LILYGO T-Display-P4"
         depends on IDF_TARGET_ESP32P4
+    config BOARD_TYPE_LILYGO_T_DISPLAY_S3
+        bool "LILYGO T-Display-S3 1.9\" ST7789 LCD"
+        depends on IDF_TARGET_ESP32S3
     config BOARD_TYPE_MOVECALL_MOJI_ESP32S3
         bool "Movecall Moji 小智AI衍生版"
         depends on IDF_TARGET_ESP32S3
