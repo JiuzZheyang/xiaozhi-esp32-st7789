@@ -109,8 +109,21 @@ public:
         asr_button_(ASR_BUTTON_GPIO) {
         ESP_LOGI(TAG, "=== LilygoTDisplayS3 CONSTRUCTOR START ===");
         ESP_LOGI(TAG, "DISPLAY_BL_PIN=%d GPIO_NUM_NC=%d", DISPLAY_BL_PIN, GPIO_NUM_NC);
+        gpio_config_t dbg_io = {};
+        dbg_io.pin_bit_mask = 1ULL << BUILTIN_LED_GPIO;
+        dbg_io.mode = GPIO_MODE_OUTPUT;
+        dbg_io.pull_up_en = GPIO_PULLUP_DISABLE;
+        dbg_io.pull_down_en = GPIO_PULLDOWN_DISABLE;
+        dbg_io.intr_type = GPIO_INTR_DISABLE;
+        gpio_config(&dbg_io);
+        gpio_set_level(BUILTIN_LED_GPIO, 1);  // LED on = constructor start
+        ESP_LOGI(TAG, "GPIO %d set HIGH (LED on, constructor start)", BUILTIN_LED_GPIO);
         InitializeSpi();
+        gpio_set_level(BUILTIN_LED_GPIO, 0);  // LED off = SPI init done
+        ESP_LOGI(TAG, "GPIO %d set LOW (SPI done)", BUILTIN_LED_GPIO);
         InitializeLcdDisplay();
+        gpio_set_level(BUILTIN_LED_GPIO, 1);  // LED on = LCD init done
+        ESP_LOGI(TAG, "GPIO %d set HIGH (LCD done)", BUILTIN_LED_GPIO);
         InitializeButtons();
         ESP_LOGI(TAG, "Display BL pin: %d, NC=%d", DISPLAY_BL_PIN, GPIO_NUM_NC);
         if (DISPLAY_BL_PIN != GPIO_NUM_NC) {
@@ -120,6 +133,7 @@ public:
         } else {
             ESP_LOGW(TAG, "Backlight pin is NC, skipping backlight init");
         }
+        gpio_set_level(BUILTIN_LED_GPIO, 0);  // LED off = constructor done
         ESP_LOGI(TAG, "=== LilygoTDisplayS3 CONSTRUCTOR END ===");
     }
 
