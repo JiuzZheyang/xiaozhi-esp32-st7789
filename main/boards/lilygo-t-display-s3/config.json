@@ -4,7 +4,7 @@
         {
             "name": "lilygo-t-display-s3",
             "sdkconfig_append": [
-                "LCD_ST7789_170X320=y",
+                "CONFIG_LCD_ST7789_170X320=y",
                 "CONFIG_BOARD_TYPE_LILYGO_T_DISPLAY_S3=y"
             ]
         }
