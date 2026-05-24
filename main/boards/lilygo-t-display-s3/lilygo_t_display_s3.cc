@@ -24,6 +24,8 @@ private:
     LcdDisplay* display_;
 
     void InitializeSpi() {
+        gpio_set_level(BUILTIN_LED_GPIO, 0);  // debug
+        ESP_LOGI(TAG, "SPI init: mosi=%d miso=%d clk=%d", DISPLAY_MOSI_PIN, DISPLAY_MISO_PIN, DISPLAY_CLK_PIN);
         spi_bus_config_t buscfg = {};
         buscfg.mosi_io_num = DISPLAY_MOSI_PIN;
         buscfg.miso_io_num = DISPLAY_MISO_PIN;
@@ -31,13 +33,18 @@ private:
         buscfg.quadwp_io_num = GPIO_NUM_NC;
         buscfg.quadhd_io_num = GPIO_NUM_NC;
         buscfg.max_transfer_sz = DISPLAY_WIDTH * DISPLAY_HEIGHT * sizeof(uint16_t);
-        ESP_ERROR_CHECK(spi_bus_initialize(SPI3_HOST, &buscfg, SPI_DMA_CH_AUTO));
+        esp_err_t err = spi_bus_initialize(SPI3_HOST, &buscfg, SPI_DMA_CH_AUTO);
+        ESP_LOGI(TAG, "spi_bus_initialize result: %s", esp_err_to_name(err));
+        if (err != ESP_OK) return;
+        gpio_set_level(BUILTIN_LED_GPIO, 1);  // debug - SPI done
     }
 
     void InitializeLcdDisplay() {
+        gpio_set_level(BUILTIN_LED_GPIO, 0);  // debug
+        ESP_LOGI(TAG, "LCD init: cs=%d dc=%d rst=%d", DISPLAY_CS_PIN, DISPLAY_DC_PIN, DISPLAY_RST_PIN);
         esp_lcd_panel_io_handle_t panel_io = nullptr;
         esp_lcd_panel_handle_t panel = nullptr;
-        ESP_LOGD(TAG, "Install panel IO");
+        
         esp_lcd_panel_io_spi_config_t io_config = {};
         io_config.cs_gpio_num = DISPLAY_CS_PIN;
         io_config.dc_gpio_num = DISPLAY_DC_PIN;
@@ -46,24 +53,39 @@ private:
         io_config.trans_queue_depth = 10;
         io_config.lcd_cmd_bits = 8;
         io_config.lcd_param_bits = 8;
-        ESP_ERROR_CHECK(esp_lcd_new_panel_io_spi(SPI3_HOST, &io_config, &panel_io));
-
-        ESP_LOGD(TAG, "Install LCD driver");
+        ESP_LOGI(TAG, "esp_lcd_new_panel_io_spi start");
+        esp_err_t err = esp_lcd_new_panel_io_spi(SPI3_HOST, &io_config, &panel_io);
+        ESP_LOGI(TAG, "esp_lcd_new_panel_io_spi: %s", esp_err_to_name(err));
+        if (err != ESP_OK) return;
+        gpio_set_level(BUILTIN_LED_GPIO, 1);  // debug - panel io done
+        
+        ESP_LOGI(TAG, "esp_lcd_new_panel_st7789 start");
         esp_lcd_panel_dev_config_t panel_config = {};
         panel_config.reset_gpio_num = DISPLAY_RST_PIN;
         panel_config.rgb_ele_order = DISPLAY_RGB_ORDER;
         panel_config.bits_per_pixel = 16;
-        ESP_ERROR_CHECK(esp_lcd_new_panel_st7789(panel_io, &panel_config, &panel));
-
+        err = esp_lcd_new_panel_st7789(panel_io, &panel_config, &panel);
+        ESP_LOGI(TAG, "esp_lcd_new_panel_st7789: %s", esp_err_to_name(err));
+        if (err != ESP_OK) return;
+        gpio_set_level(BUILTIN_LED_GPIO, 0);  // debug
+        
+        ESP_LOGI(TAG, "esp_lcd_panel_reset start");
         esp_lcd_panel_reset(panel);
+        ESP_LOGI(TAG, "esp_lcd_panel_init start");
         esp_lcd_panel_init(panel);
+        ESP_LOGI(TAG, "esp_lcd_panel_invert_color start");
         esp_lcd_panel_invert_color(panel, DISPLAY_INVERT_COLOR);
+        ESP_LOGI(TAG, "esp_lcd_panel_swap_xy start");
         esp_lcd_panel_swap_xy(panel, DISPLAY_SWAP_XY);
+        ESP_LOGI(TAG, "esp_lcd_panel_mirror start");
         esp_lcd_panel_mirror(panel, DISPLAY_MIRROR_X, DISPLAY_MIRROR_Y);
-
+        gpio_set_level(BUILTIN_LED_GPIO, 1);  // debug - panel ops done
+        
+        ESP_LOGI(TAG, "Creating SpiLcdDisplay...");
         display_ = new SpiLcdDisplay(panel_io, panel,
                                     DISPLAY_WIDTH, DISPLAY_HEIGHT, DISPLAY_OFFSET_X, DISPLAY_OFFSET_Y,
                                     DISPLAY_MIRROR_X, DISPLAY_MIRROR_Y, DISPLAY_SWAP_XY);
+        ESP_LOGI(TAG, "SpiLcdDisplay created");
     }
 
     void InitializeButtons() {
@@ -117,15 +139,14 @@ public:
         dbg_io.intr_type = GPIO_INTR_DISABLE;
         gpio_config(&dbg_io);
         gpio_set_level(BUILTIN_LED_GPIO, 1);  // LED on = constructor start
-        ESP_LOGI(TAG, "GPIO %d set HIGH (LED on, constructor start)", BUILTIN_LED_GPIO);
-        InitializeSpi();
-        gpio_set_level(BUILTIN_LED_GPIO, 0);  // LED off = SPI init done
-        ESP_LOGI(TAG, "GPIO %d set LOW (SPI done)", BUILTIN_LED_GPIO);
-        InitializeLcdDisplay();
-        gpio_set_level(BUILTIN_LED_GPIO, 1);  // LED on = LCD init done
-        ESP_LOGI(TAG, "GPIO %d set HIGH (LCD done)", BUILTIN_LED_GPIO);
+        ESP_LOGI(TAG, "GPIO %d set HIGH (constructor start)", BUILTIN_LED_GPIO);
+        InitializeSpi();  // toggles: LOW at start, HIGH when done
+        InitializeLcdDisplay();  // toggles: LOW at start, HIGH when done
+        gpio_set_level(BUILTIN_LED_GPIO, 0);  // LED off = init funcs done
+        ESP_LOGI(TAG, "Init funcs done, calling InitializeButtons()");
         InitializeButtons();
-        ESP_LOGI(TAG, "Display BL pin: %d, NC=%d", DISPLAY_BL_PIN, GPIO_NUM_NC);
+        gpio_set_level(BUILTIN_LED_GPIO, 1);  // LED on = buttons done
+        ESP_LOGI(TAG, "Buttons done, initializing backlight...");
         if (DISPLAY_BL_PIN != GPIO_NUM_NC) {
             ESP_LOGI(TAG, "Initializing backlight on GPIO %d", DISPLAY_BL_PIN);
             GetBacklight()->RestoreBrightness();
