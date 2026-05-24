@@ -22,6 +22,18 @@ extern "C" void app_main(void)
     }
     ESP_ERROR_CHECK(ret);
 
+    // Force LCD power (GPIO15) and backlight (GPIO38) on for testing
+    gpio_config_t io = {};
+    io.pin_bit_mask = (1ULL << 15) | (1ULL << 38);
+    io.mode = GPIO_MODE_OUTPUT;
+    io.pull_up_en = GPIO_PULLUP_DISABLE;
+    io.pull_down_en = GPIO_PULLDOWN_DISABLE;
+    io.intr_type = GPIO_INTR_DISABLE;
+    gpio_config(&io);
+    gpio_set_level(GPIO_NUM_15, 1);  // LCD power on
+    gpio_set_level(GPIO_NUM_38, 1);  // Backlight on
+    ESP_LOGI(TAG, "FORCE LCD/GPIO15=1 BL/GPIO38=1");
+
     // Initialize and run the application
     auto& app = Application::GetInstance();
     app.Initialize();
