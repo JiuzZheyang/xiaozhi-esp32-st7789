@@ -18,9 +18,10 @@ jobs:
         run: |
           git config --global --add safe.directory /__w/xiaozhi-esp32-st7789/xiaozhi-esp32-st7789
           rm -rf managed_components
-          rm -rf build
           # 删除 sdkconfig，确保从 sdkconfig.defaults 重新生成
           rm -f sdkconfig
+          # 完全清除旧的 build 目录
+          rm -rf build
           # 清除 IDF 组件缓存，确保完全重新编译
           rm -rf ~/esp/projects/*
           rm -rf ~/.espressif/espidf-*
@@ -30,6 +31,8 @@ jobs:
         shell: bash
         run: |
           source $IDF_PATH/export.sh
+          # 完全清理并重新配置（不走缓存）
+          idf.py fullclean
           python scripts/release.py lilygo-t-display-s3 --name lilygo-t-display-s3
 
       - name: Upload artifact

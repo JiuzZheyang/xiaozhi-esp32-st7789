@@ -8,6 +8,7 @@
 #include "led/single_led.h"
 
 #include <esp_log.h>
+#include <driver/gpio.h>
 #include <driver/i2c_master.h>
 #include <esp_lcd_panel_vendor.h>
 #include <esp_lcd_panel_io.h>
@@ -15,6 +16,23 @@
 #include <driver/spi_common.h>
 
 #define TAG "LilygoTDisplayS3"
+
+// Early debug: toggle GPIO40 three times rapidly to signal constructor entry
+// Uses ESP-IDF gpio driver API
+static void early_debug_led(void) {
+    gpio_set_direction(GPIO_NUM_40, GPIO_MODE_OUTPUT);
+    gpio_set_level(GPIO_NUM_40, 1);
+    for (volatile int dly = 0; dly < 200000; dly++);
+    gpio_set_level(GPIO_NUM_40, 0);
+    for (volatile int dly = 0; dly < 200000; dly++);
+    gpio_set_level(GPIO_NUM_40, 1);
+    for (volatile int dly = 0; dly < 200000; dly++);
+    gpio_set_level(GPIO_NUM_40, 0);
+    for (volatile int dly = 0; dly < 200000; dly++);
+    gpio_set_level(GPIO_NUM_40, 1);
+    for (volatile int dly = 0; dly < 200000; dly++);
+    gpio_set_level(GPIO_NUM_40, 0);
+}
 
 class LilygoTDisplayS3Board : public WifiBoard {
 private:
@@ -129,6 +147,7 @@ public:
         boot_button_(BOOT_BUTTON_GPIO),
         touch_button_(TOUCH_BUTTON_GPIO),
         asr_button_(ASR_BUTTON_GPIO) {
+        early_debug_led();  // 3 rapid LED blinks (GPIO40) before anything else
         ESP_LOGI(TAG, "=== LilygoTDisplayS3 CONSTRUCTOR START ===");
         ESP_LOGI(TAG, "DISPLAY_BL_PIN=%d GPIO_NUM_NC=%d", DISPLAY_BL_PIN, GPIO_NUM_NC);
         gpio_config_t dbg_io = {};
